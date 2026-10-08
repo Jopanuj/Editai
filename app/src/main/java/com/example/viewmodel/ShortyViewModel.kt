@@ -17,10 +17,10 @@ import kotlin.math.min
 enum class EditorTab(val label: String, val icon: String) {
     STUDIO("Studio", "play"),
     TIMELINE("Timeline", "view_timeline"),
-    AI_PROMPT("AI Brief", "auto_awesome"),
+    EFFECTS("FX & Motion", "auto_fix_high"),
     STYLE("Style & Grade", "palette"),
-    EFFECTS("FX & Assets", "wand"),
-    AUDIO("Audio & SFX", "music_note")
+    AUDIO("Audio & SFX", "music_note"),
+    AI_PROMPT("AI Brief", "auto_awesome")
 }
 
 data class UiNotification(
@@ -69,9 +69,6 @@ class ShortyViewModel : ViewModel() {
 
     private val _exportProgress = MutableStateFlow(0f)
     val exportProgress: StateFlow<Float> = _exportProgress.asStateFlow()
-
-    private val _exportPipelineStage = MutableStateFlow("Initializing pipeline...")
-    val exportPipelineStage: StateFlow<String> = _exportPipelineStage.asStateFlow()
 
     private val _exportSuccess = MutableStateFlow(false)
     val exportSuccess: StateFlow<Boolean> = _exportSuccess.asStateFlow()
@@ -313,110 +310,6 @@ class ShortyViewModel : ViewModel() {
         showToast("Color grade: ${grade.displayName}", true)
     }
 
-    fun updateVisualEffect(effect: VisualEffectPreset) {
-        _currentProject.value = _currentProject.value?.copy(activeEffect = effect)
-        showToast("Applied FX: ${effect.displayName}", true)
-    }
-
-    fun updateTransitionStyle(transition: TransitionStyle) {
-        _currentProject.value = _currentProject.value?.copy(transitionStyle = transition)
-        showToast("Transition: ${transition.displayName}", true)
-    }
-
-    fun addSticker(emoji: String, label: String) {
-        val proj = _currentProject.value ?: return
-        val currentPlayhead = _playbackPositionSec.value
-        val newSticker = AnimatedSticker(
-            id = "stk_${System.currentTimeMillis()}",
-            emoji = emoji,
-            label = label,
-            timestampSec = currentPlayhead,
-            xFraction = 0.5f,
-            yFraction = 0.25f
-        )
-        _currentProject.value = proj.copy(stickers = proj.stickers + listOf(newSticker))
-        showToast("Added $emoji $label at ${(currentPlayhead * 10).toInt() / 10f}s!", true)
-    }
-
-    fun removeSticker(stickerId: String) {
-        val proj = _currentProject.value ?: return
-        _currentProject.value = proj.copy(stickers = proj.stickers.filterNot { it.id == stickerId })
-        showToast("Removed sticker asset", true)
-    }
-
-    fun toggleVoiceEnhancer(enabled: Boolean) {
-        _currentProject.value = _currentProject.value?.copy(voiceEnhanceEnabled = enabled)
-        showToast(if (enabled) "🎙️ AI Voice Enhancer ON (Studio broadcast clarity)" else "Voice Enhancer OFF", true)
-    }
-
-    fun applyCreatorToolPreset(toolId: String) {
-        val proj = _currentProject.value ?: return
-        when (toolId) {
-            "tool_voice_enhancer" -> {
-                _currentProject.value = proj.copy(voiceEnhanceEnabled = true)
-                showToast("🎙️ Voice Enhancer: Cleaned reverb & balanced voice levels", true)
-            }
-            "tool_b_roll" -> {
-                val enhancedCuts = proj.cuts.mapIndexed { idx, cut ->
-                    if (idx % 2 == 1) cut.copy(label = "🎬 Cinematic B-Roll Insert", zoomFactor = 1.2f) else cut
-                }
-                _currentProject.value = proj.copy(cuts = enhancedCuts)
-                showToast("🎞️ Wove in dynamic B-Roll cutaways to break up monologue", true)
-            }
-            "tool_hook_generator" -> {
-                val hookCuts = proj.cuts.mapIndexed { idx, cut ->
-                    if (idx == 0) cut.copy(label = "⚡ Curiosity Hook Variant", zoomFactor = 1.3f) else cut
-                }
-                _currentProject.value = proj.copy(cuts = hookCuts)
-                showToast("🎯 Applied high-converting 3-second opening hook!", true)
-            }
-            "tool_silence_stripper" -> {
-                val tightCuts = proj.cuts.map { cut -> cut.copy(durationSec = (cut.durationSec * 0.85f).coerceAtLeast(0.8f)) }
-                _currentProject.value = proj.copy(cuts = tightCuts, removeSilences = true)
-                showToast("✂️ Stripped dead air & breath gaps for faster retention pace", true)
-            }
-            "tool_fx_lab" -> {
-                val fireSticker = AnimatedSticker("stk_fire", "🔥", "Hype Hit", 0.5f, 0.5f, 0.22f)
-                _currentProject.value = proj.copy(
-                    activeEffect = VisualEffectPreset.FILM_GRAIN,
-                    stickers = proj.stickers + listOf(fireSticker)
-                )
-                showToast("🎨 Added 35mm Film Grain texture & animated 🔥 sticker!", true)
-            }
-            "tool_reframe_hub" -> {
-                _currentProject.value = proj.copy(aspectRatio = AspectRatioType.RATIO_9_16, autoReframe = true)
-                showToast("📱 Auto-reframed safe-zone for TikTok, Shorts & Reels", true)
-            }
-            "tool_emoji_highlighter" -> {
-                val stickersList = listOf(
-                    AnimatedSticker("stk_fire", "🔥", "Hype Hit", 0.5f, 0.5f, 0.22f),
-                    AnimatedSticker("stk_rocket", "🚀", "Moon Launch", 2.5f, 0.5f, 0.22f),
-                    AnimatedSticker("stk_100", "💯", "Pure Value", 5.0f, 0.5f, 0.22f)
-                )
-                _currentProject.value = proj.copy(stickers = proj.stickers + stickersList)
-                showToast("✨ Injected kinetic animated stickers at key moments!", true)
-            }
-            "tool_punch_zooms" -> {
-                val zoomedCuts = proj.cuts.mapIndexed { idx, cut ->
-                    val factor = if (idx % 2 == 0) 1.25f else 1.0f
-                    cut.copy(zoomFactor = factor)
-                }
-                _currentProject.value = proj.copy(cuts = zoomedCuts)
-                showToast("⚡ Applied alternating 1.25x kinetic punch-in retention zooms!", true)
-            }
-            "tool_bass_boost" -> {
-                _currentProject.value = proj.copy(musicVolume = 0.45f, voiceEnhanceEnabled = true)
-                showToast("🔊 Mastered dynamic range with punchy bass limiter & clarity", true)
-            }
-            "tool_speed_ramp" -> {
-                _playbackSpeed.value = 1.15f
-                val rampedCuts = proj.cuts.map { cut -> cut.copy(durationSec = (cut.durationSec / 1.15f).coerceAtLeast(0.6f)) }
-                _currentProject.value = proj.copy(cuts = rampedCuts)
-                showToast("⏩ Pacing boosted to 1.15x speed ramp for viral retention!", true)
-            }
-        }
-    }
-
     fun updateMusic(track: MusicTrack?) {
         _currentProject.value = _currentProject.value?.copy(selectedMusic = track)
         showToast(if (track != null) "Soundtrack: ${track.title}" else "Music muted", true)
@@ -424,6 +317,43 @@ class ShortyViewModel : ViewModel() {
 
     fun updateMusicVolume(volume: Float) {
         _currentProject.value = _currentProject.value?.copy(musicVolume = volume.coerceIn(0f, 1f))
+    }
+
+    fun updateFilterEffect(effect: VideoFilterEffect) {
+        _currentProject.value = _currentProject.value?.copy(activeFilterEffect = effect)
+        showToast("Applied FX: ${effect.displayName}", true)
+    }
+
+    fun toggleOverlayItem(item: MotionOverlayItem) {
+        val proj = _currentProject.value ?: return
+        val currentItems = proj.activeOverlayItems.toMutableList()
+        val existingIndex = currentItems.indexOfFirst { it.id == item.id }
+        if (existingIndex >= 0) {
+            val existing = currentItems[existingIndex]
+            currentItems[existingIndex] = existing.copy(isEnabled = !existing.isEnabled)
+            val isNowActive = currentItems[existingIndex].isEnabled
+            showToast(if (isNowActive) "Enabled ${item.text} overlay" else "Hidden ${item.text} overlay", true)
+        } else {
+            currentItems.add(item.copy(isEnabled = true))
+            showToast("Added ${item.text} overlay", true)
+        }
+        _currentProject.value = proj.copy(activeOverlayItems = currentItems)
+    }
+
+    fun toggleAudioWaveform(enabled: Boolean) {
+        _currentProject.value = _currentProject.value?.copy(showAudioWaveform = enabled)
+        showToast(if (enabled) "Audio waveform visualizer ON" else "Audio waveform visualizer OFF", true)
+    }
+
+    fun toggleAutoTransitionSfx(enabled: Boolean) {
+        _currentProject.value = _currentProject.value?.copy(autoTransitionSfx = enabled)
+        showToast(if (enabled) "Auto-transition Whoosh SFX ON" else "Auto-transition Whoosh SFX OFF", true)
+    }
+
+    fun updateSpeedRamp(factor: Float) {
+        _currentProject.value = _currentProject.value?.copy(speedRampFactor = factor)
+        setPlaybackSpeed(factor)
+        showToast("Speed Ramp: ${factor}x playback", true)
     }
 
     fun startExport(quality: RenderQuality) {
@@ -434,22 +364,10 @@ class ShortyViewModel : ViewModel() {
             _exportSuccess.value = false
             _exportProgress.value = 0f
 
-            val pipelineStages = listOf(
-                Pair(0.20f, "Stage 1/5: Extracting & Pre-processing Cut Streams..."),
-                Pair(0.40f, "Stage 2/5: Applying 9:16 Subject AI Safe-Zone Auto-Reframe..."),
-                Pair(0.60f, if (proj.enableCaptions) "Stage 3/5: Subtitle Burn-In (${proj.captionFontStyle.displayName})..." else "Stage 3/5: Video Color Grading & Filter Pass..."),
-                Pair(0.80f, "Stage 4/5: Audio Mastering & SFX Ducking..."),
-                Pair(1.00f, "Stage 5/5: GPU Hardware Encoding ${quality.label} MP4...")
-            )
-
-            for ((targetProgress, stageDesc) in pipelineStages) {
-                _exportPipelineStage.value = stageDesc
-                val startProgress = _exportProgress.value
-                val steps = 8
-                for (s in 1..steps) {
-                    delay(60)
-                    _exportProgress.value = startProgress + (targetProgress - startProgress) * (s / steps.toFloat())
-                }
+            val totalSteps = 20
+            for (i in 1..totalSteps) {
+                delay(120)
+                _exportProgress.value = i.toFloat() / totalSteps
             }
 
             _exportSuccess.value = true

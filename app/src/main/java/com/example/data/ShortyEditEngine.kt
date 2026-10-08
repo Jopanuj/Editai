@@ -154,6 +154,11 @@ object ShortyEditEngine {
             musicVolume = 0.32f, // Audio ducking pre-set
             soundEffects = sfxList,
             colorGrade = style.colorGrade,
+            activeFilterEffect = VideoFilterEffect.NONE,
+            activeOverlayItems = SampleMediaData.ReadyToUseOverlays.take(1),
+            showAudioWaveform = false,
+            autoTransitionSfx = true,
+            speedRampFactor = 1.0f,
             aiPromptBrief = customPrompt.ifEmpty { style.defaultPrompt },
             removeSilences = removeSilences,
             autoReframe = true,
@@ -367,58 +372,52 @@ object ShortyEditEngine {
             logMessages.add("⏹️ Changed aspect ratio to 1:1 Square.")
         }
 
-        // 8. Visual Effects & Overlays
-        if (lower.contains("film grain") || lower.contains("grain")) {
-            updated = updated.copy(activeEffect = VisualEffectPreset.FILM_GRAIN)
-            logMessages.add("🎞️ Applied 35mm Analog Film Grain texture overlay.")
-        } else if (lower.contains("glitch") || lower.contains("cyber")) {
-            updated = updated.copy(activeEffect = VisualEffectPreset.CYBER_GLITCH)
-            logMessages.add("👾 Applied RGB Chromatic Glitch effect slices.")
-        } else if (lower.contains("light leak") || lower.contains("flare")) {
-            updated = updated.copy(activeEffect = VisualEffectPreset.LIGHT_LEAK)
-            logMessages.add("☀️ Applied Golden Optical Light Leak overlay.")
-        } else if (lower.contains("flash") || lower.contains("strobe")) {
-            updated = updated.copy(activeEffect = VisualEffectPreset.FLASH_IMPACT)
-            logMessages.add("💥 Applied Whiteout Strobe impact flashes.")
-        } else if (lower.contains("vhs") || lower.contains("retro") || lower.contains("crt")) {
-            updated = updated.copy(activeEffect = VisualEffectPreset.VHS_RETRO)
-            logMessages.add("📼 Applied 90s Camcorder CRT Scanlines with timestamp.")
-        } else if (lower.contains("no effect") || lower.contains("remove effect") || lower.contains("clean effect")) {
-            updated = updated.copy(activeEffect = VisualEffectPreset.NONE)
-            logMessages.add("✨ Cleared visual effect overlays.")
+        // 8. Visual Filter Effects & Shaders
+        if (lower.contains("vhs") || lower.contains("glitch") || lower.contains("retro")) {
+            updated = updated.copy(activeFilterEffect = VideoFilterEffect.VHS_GLITCH)
+            logMessages.add("📼 Enabled VHS Retro Glitch filter with CRT scanlines & chromatic distortion.")
+        } else if (lower.contains("rgb") || lower.contains("holo")) {
+            updated = updated.copy(activeFilterEffect = VideoFilterEffect.RGB_SPLIT)
+            logMessages.add("⚡ Enabled RGB Hologram chromatic aberration effect.")
+        } else if (lower.contains("grain") || lower.contains("35mm") || lower.contains("film")) {
+            updated = updated.copy(activeFilterEffect = VideoFilterEffect.FILM_GRAIN)
+            logMessages.add("🎞️ Applied 35mm Cinematic Film Grain & warm halation.")
+        } else if (lower.contains("cyber") || lower.contains("neon glow")) {
+            updated = updated.copy(activeFilterEffect = VideoFilterEffect.NEON_CYBER)
+            logMessages.add("🌟 Enabled Cyber Neon Glow edge lighting bloom.")
+        } else if (lower.contains("strobe") || lower.contains("flash")) {
+            updated = updated.copy(activeFilterEffect = VideoFilterEffect.FLASH_STROBE)
+            logMessages.add("⚡ Enabled Impact Strobe Flash on key cut transitions.")
+        } else if (lower.contains("no fx") || lower.contains("remove effect") || lower.contains("clean effect")) {
+            updated = updated.copy(activeFilterEffect = VideoFilterEffect.NONE)
+            logMessages.add("✨ Cleared visual filter effects for natural clean clarity.")
         }
 
-        // 9. Transitions
-        if (lower.contains("whip") || lower.contains("whoosh transition")) {
-            updated = updated.copy(transitionStyle = TransitionStyle.WHIP_PAN)
-            logMessages.add("💨 Set transitions to directional Whip Pan with whoosh blur.")
-        } else if (lower.contains("warp") || lower.contains("zoom transition")) {
-            updated = updated.copy(transitionStyle = TransitionStyle.WARP_ZOOM)
-            logMessages.add("⚡ Set transitions to kinetic Warp Zoom punch-through.")
-        } else if (lower.contains("hard cut") || lower.contains("jump cut")) {
-            updated = updated.copy(transitionStyle = TransitionStyle.HARD_CUT)
-            logMessages.add("✂️ Set transitions to instant 0ms hard cuts.")
+        // 9. Motion Graphics & Animated Overlays
+        if (lower.contains("sound on") || lower.contains("audio badge")) {
+            val soundOnItem = SampleMediaData.ReadyToUseOverlays.firstOrNull { it.id == "ov_sound_on" }
+            if (soundOnItem != null) {
+                updated = updated.copy(activeOverlayItems = listOf(soundOnItem))
+                logMessages.add("🔊 Added 'SOUND ON' animated audio hook overlay.")
+            }
+        } else if (lower.contains("wait for it") || lower.contains("suspense")) {
+            val waitItem = SampleMediaData.ReadyToUseOverlays.firstOrNull { it.id == "ov_wait" }
+            if (waitItem != null) {
+                updated = updated.copy(activeOverlayItems = listOf(waitItem))
+                logMessages.add("😱 Added 'WAIT FOR IT...' animated suspense badge.")
+            }
+        } else if (lower.contains("viral alert") || lower.contains("breaking")) {
+            val viralItem = SampleMediaData.ReadyToUseOverlays.firstOrNull { it.id == "ov_viral" }
+            if (viralItem != null) {
+                updated = updated.copy(activeOverlayItems = listOf(viralItem))
+                logMessages.add("🚨 Added 'VIRAL ALERT' neon pulsing top header.")
+            }
         }
 
-        // 10. Voice Enhancer & Audio Denoise
-        if (lower.contains("voice") || lower.contains("denoise") || lower.contains("enhance audio") || lower.contains("clean voice")) {
-            updated = updated.copy(voiceEnhanceEnabled = true)
-            logMessages.add("🎙️ Enabled AI Studio Voice Enhancer (room echo removal & broadcast EQ leveling).")
-        }
-
-        // 11. Stickers & Animations
-        if (lower.contains("fire") || lower.contains("flame")) {
-            val newSticker = AnimatedSticker("stk_${System.currentTimeMillis()}", "🔥", "Fire Hype", 1.2f, 0.5f, 0.22f)
-            updated = updated.copy(stickers = updated.stickers + listOf(newSticker))
-            logMessages.add("🔥 Placed animated Fire Hype sticker at 1.2s!")
-        } else if (lower.contains("100") || lower.contains("hundred")) {
-            val newSticker = AnimatedSticker("stk_${System.currentTimeMillis()}", "💯", "Top Score", 2.0f, 0.5f, 0.25f)
-            updated = updated.copy(stickers = updated.stickers + listOf(newSticker))
-            logMessages.add("💯 Placed animated 100% Score bumper at 2.0s!")
-        } else if (lower.contains("rocket") || lower.contains("growth")) {
-            val newSticker = AnimatedSticker("stk_${System.currentTimeMillis()}", "🚀", "Rocket Blast", 0.8f, 0.5f, 0.20f)
-            updated = updated.copy(stickers = updated.stickers + listOf(newSticker))
-            logMessages.add("🚀 Placed animated Rocket Blast sticker at 0.8s!")
+        // 10. Waveform visualizer
+        if (lower.contains("waveform") || lower.contains("audio visualizer") || lower.contains("spectrum")) {
+            updated = updated.copy(showAudioWaveform = true)
+            logMessages.add("📊 Enabled animated audio spectrum waveform visualizer.")
         }
 
         val finalMessage = if (logMessages.isNotEmpty()) {

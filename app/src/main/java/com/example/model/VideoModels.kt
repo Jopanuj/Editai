@@ -77,42 +77,6 @@ enum class CaptionFontStyle(
     PLAYFUL_COMIC("font_comic", "Comic Punch", "Bubbly dynamic casual lettering", "WAIT FOR IT! 💥")
 }
 
-enum class VisualEffectPreset(val id: String, val displayName: String, val description: String, val badge: String) {
-    NONE("fx_none", "Clean Raw", "Original sharp raw footage without filters", "CLEAN"),
-    FILM_GRAIN("fx_grain", "35mm Film Grain", "Textured organic analog film grain", "GRAIN"),
-    CYBER_GLITCH("fx_glitch", "RGB Glitch Shift", "Chromatic aberration cyber glitch slices", "GLITCH"),
-    LIGHT_LEAK("fx_leak", "Golden Sun Flare", "Warm cinematic optical lens leaks", "FLARE"),
-    FLASH_IMPACT("fx_flash", "Whiteout Strobe", "High-energy beat drop impact flashes", "FLASH"),
-    VHS_RETRO("fx_vhs", "90s Camcorder CRT", "Analog CRT scanlines & retro timestamp", "VHS")
-}
-
-enum class TransitionStyle(val id: String, val displayName: String, val description: String, val icon: String) {
-    HARD_CUT("tr_hard", "Instant Cut", "Zero ms fast retention cut", "✂️"),
-    WHIP_PAN("tr_whip", "Whip Pan", "Directional horizontal whoosh blur", "💨"),
-    WARP_ZOOM("tr_zoom", "Warp Zoom", "Kinetic punch-in forward dive", "⚡"),
-    FLASH_WHITE("tr_flash", "Impact Flash", "Explosive white strobe transition", "💥"),
-    GLITCH_SLICE("tr_glitch", "Cyber Glitch", "Digital cybernetic slice glitch", "👾")
-}
-
-data class AnimatedSticker(
-    val id: String,
-    val emoji: String,
-    val label: String,
-    val timestampSec: Float,
-    val xFraction: Float = 0.5f,
-    val yFraction: Float = 0.28f,
-    val durationSec: Float = 2.5f
-)
-
-data class CreatorToolPreset(
-    val id: String,
-    val title: String,
-    val description: String,
-    val iconKey: String,
-    val category: String,
-    val isFree: Boolean = true
-)
-
 enum class ColorGradePreset(val displayName: String, val description: String) {
     NATURAL("Natural Raw", "Unfiltered original tones"),
     VIBRANT_POP("Vibrant Social", "High saturation & rich punch"),
@@ -180,10 +144,11 @@ data class TimelineProject(
     val musicVolume: Float = 0.35f,
     val soundEffects: List<SoundEffect> = emptyList(),
     val colorGrade: ColorGradePreset = ColorGradePreset.VIBRANT_POP,
-    val activeEffect: VisualEffectPreset = VisualEffectPreset.NONE,
-    val transitionStyle: TransitionStyle = TransitionStyle.WHIP_PAN,
-    val stickers: List<AnimatedSticker> = emptyList(),
-    val voiceEnhanceEnabled: Boolean = true,
+    val activeFilterEffect: VideoFilterEffect = VideoFilterEffect.NONE,
+    val activeOverlayItems: List<MotionOverlayItem> = emptyList(),
+    val showAudioWaveform: Boolean = false,
+    val autoTransitionSfx: Boolean = true,
+    val speedRampFactor: Float = 1.0f,
     val aiPromptBrief: String = "",
     val removeSilences: Boolean = true,
     val autoReframe: Boolean = true,
@@ -191,6 +156,43 @@ data class TimelineProject(
     val isRendered: Boolean = false,
     val createdAtMs: Long = System.currentTimeMillis()
 )
+
+enum class VideoFilterEffect(
+    val id: String,
+    val displayName: String,
+    val description: String,
+    val badge: String
+) {
+    NONE("fx_none", "Clean Raw", "Natural untouched video clarity", "CLEAN"),
+    VHS_GLITCH("fx_vhs", "VHS Retro Glitch", "CRT scanlines, tape noise & RGB edge displacement", "RETRO 📼"),
+    RGB_SPLIT("fx_rgb", "RGB Hologram", "Chromatic aberration & futuristic prism split", "HOLO ⚡"),
+    FILM_GRAIN("fx_grain", "35mm Film Grain", "Warm vintage cinematic grain & analogue warmth", "FILM 🎞️"),
+    NEON_CYBER("fx_neon", "Cyber Neon Glow", "Vibrant edge bloom & stylized high-contrast glow", "CYBER 🌟"),
+    FLASH_STROBE("fx_flash", "Impact Strobe Flash", "Dramatic lightning flash at key cut points", "PUNCH ⚡")
+}
+
+data class MotionOverlayItem(
+    val id: String,
+    val text: String,
+    val emoji: String,
+    val subtitle: String,
+    val position: OverlayPosition = OverlayPosition.TOP_CENTER,
+    val animationType: OverlayAnimation = OverlayAnimation.PULSE,
+    val isEnabled: Boolean = true
+)
+
+enum class OverlayPosition(val label: String) {
+    TOP_CENTER("Top Hook"),
+    MIDDLE_SCREEN("Center Focus"),
+    LOWER_THIRD("Lower Third")
+}
+
+enum class OverlayAnimation(val label: String) {
+    PULSE("Gentle Pulse"),
+    GLITCH_BOUNCE("Glitch Bounce"),
+    NEON_FLICKER("Neon Flicker"),
+    SLIDE_IN("Slide In")
+}
 
 enum class RenderQuality(val label: String, val resolution: String, val estSizeMb: Int) {
     SHARE_720P("720p HD", "720 x 1280", 12),

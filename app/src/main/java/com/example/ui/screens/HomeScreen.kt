@@ -4,13 +4,16 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -324,6 +327,72 @@ fun HomeScreen(
                                         fontSize = 10.sp,
                                         color = NeonCyan
                                     )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Ready-to-Use Free AI Tools Deck
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("free_tools_deck"),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = StudioSurfaceElevated),
+                    border = CardDefaults.outlinedCardBorder().copy(
+                        brush = Brush.horizontalGradient(listOf(NeonCyan.copy(alpha = 0.35f), ElectricViolet.copy(alpha = 0.35f)))
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Build, "Tools", tint = NeonCyan, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Ready-to-Use Free Tools", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                            }
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = EmeraldSuccess.copy(alpha = 0.2f)
+                            ) {
+                                Text("$0.00 INCLUDED", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = EmeraldSuccess, modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp))
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            val tools = listOf(
+                                Triple("⚡ Auto-Silence Cutter", "Eliminates pauses & stutter", NeonCyan),
+                                Triple("📱 9:16 Face Reframe", "Auto-tracks speaker in center", ElectricVioletLight),
+                                Triple("💬 Kinetic Subtitles", "Word-by-word active highlights", AmberVibrant),
+                                Triple("📼 VHS & Film Shaders", "Real-time aesthetic filter canvas", CyberPink),
+                                Triple("🔊 Sound FX Engine", "Whooshes placed on cut beats", EmeraldSuccess)
+                            )
+
+                            tools.forEach { (title, desc, color) ->
+                                Surface(
+                                    modifier = Modifier.width(170.dp),
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = StudioSurface,
+                                    border = BorderStroke(1.dp, StudioSurfaceBorder)
+                                ) {
+                                    Column(modifier = Modifier.padding(10.dp)) {
+                                        Text(title, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = color)
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(desc, fontSize = 10.sp, color = TextSecondary, lineHeight = 14.sp)
+                                    }
                                 }
                             }
                         }

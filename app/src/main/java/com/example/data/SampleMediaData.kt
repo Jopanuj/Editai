@@ -215,76 +215,60 @@ object SampleMediaData {
         "Keep total final length strictly under 30 seconds"
     )
 
-    val FreeCreatorTools = listOf(
-        CreatorToolPreset(
-            id = "tool_voice_enhancer",
-            title = "Studio Voice Enhancer",
-            description = "AI removes room echo, AC hum & elevates dialogue clarity to broadcast quality",
-            iconKey = "mic",
-            category = "Audio Clarity"
+    val ReadyToUseOverlays = listOf(
+        MotionOverlayItem(
+            id = "ov_sound_on",
+            text = "SOUND ON",
+            emoji = "🔊",
+            subtitle = "Pulsing audio badge to boost watch time",
+            position = OverlayPosition.TOP_CENTER,
+            animationType = OverlayAnimation.PULSE,
+            isEnabled = true
         ),
-        CreatorToolPreset(
-            id = "tool_b_roll",
-            title = "Auto B-Roll & Visual Bumpers",
-            description = "Automatically weaves in cinematic b-roll overlays to break up talking head clips",
-            iconKey = "movie",
-            category = "Visual Polish"
+        MotionOverlayItem(
+            id = "ov_wait",
+            text = "WAIT FOR IT...",
+            emoji = "😱",
+            subtitle = "Suspense hook badge for punchlines",
+            position = OverlayPosition.TOP_CENTER,
+            animationType = OverlayAnimation.GLITCH_BOUNCE,
+            isEnabled = false
         ),
-        CreatorToolPreset(
-            id = "tool_hook_generator",
-            title = "Viral 3-Hook Split Tester",
-            description = "Synthesizes 3 high-converting hook variants (Curiosity, Negative, Bold Claim) for the first 3s",
-            iconKey = "flash",
-            category = "Retention"
+        MotionOverlayItem(
+            id = "ov_real",
+            text = "100% REAL",
+            emoji = "💯",
+            subtitle = "Authenticity gold badge for credibility",
+            position = OverlayPosition.LOWER_THIRD,
+            animationType = OverlayAnimation.PULSE,
+            isEnabled = false
         ),
-        CreatorToolPreset(
-            id = "tool_silence_stripper",
-            title = "Smart Dead-Air Stripper",
-            description = "Intelligently snips awkward pauses, breath gaps & stutter to maintain viewer retention",
-            iconKey = "cut",
-            category = "Pacing"
+        MotionOverlayItem(
+            id = "ov_viral",
+            text = "VIRAL ALERT",
+            emoji = "🚨",
+            subtitle = "High-urgency flashing red alert header",
+            position = OverlayPosition.TOP_CENTER,
+            animationType = OverlayAnimation.NEON_FLICKER,
+            isEnabled = false
         ),
-        CreatorToolPreset(
-            id = "tool_fx_lab",
-            title = "Visual FX & Animation Lab",
-            description = "Applies 35mm grain, RGB chromatic glitch, strobe flashes & animated sticker popups",
-            iconKey = "wand",
-            category = "Animations"
+        MotionOverlayItem(
+            id = "ov_fire",
+            text = "FIRE TAKE",
+            emoji = "🔥",
+            subtitle = "Hot streak animated fire sticker",
+            position = OverlayPosition.MIDDLE_SCREEN,
+            animationType = OverlayAnimation.PULSE,
+            isEnabled = false
         ),
-        CreatorToolPreset(
-            id = "tool_reframe_hub",
-            title = "Multi-Platform Safe Reframe",
-            description = "One-tap auto reframing with face tracking across 9:16, 16:9, 1:1, and 4:5 ratios",
-            iconKey = "crop",
-            category = "Social Export"
-        ),
-        CreatorToolPreset(
-            id = "tool_emoji_highlighter",
-            title = "Kinetic Animated Stickers",
-            description = "Stamps animated emoji pops (🔥, ⚡, 🚀, 💬) on key speaker punchlines",
-            iconKey = "auto_awesome",
-            category = "Animations"
-        ),
-        CreatorToolPreset(
-            id = "tool_punch_zooms",
-            title = "Dynamic Retention Punch Zooms",
-            description = "Alternates 1.0x wide and 1.25x kinetic punch-in zooms to skyrocket retention past 85%",
-            iconKey = "zoom_in",
-            category = "Pacing"
-        ),
-        CreatorToolPreset(
-            id = "tool_bass_boost",
-            title = "Punchy Audio Limiter & Master",
-            description = "Maximizes dialogue loudness and boosts sub-bass presence for crisp phone speakers",
-            iconKey = "volume_up",
-            category = "Audio Clarity"
-        ),
-        CreatorToolPreset(
-            id = "tool_speed_ramp",
-            title = "Micro Speed Ramp (1.15x)",
-            description = "Accelerates slow pauses with natural pitch retention for TikTok & Reels velocity",
-            iconKey = "speed",
-            category = "Pacing"
+        MotionOverlayItem(
+            id = "ov_sub",
+            text = "FOLLOW FOR PART 2",
+            emoji = "🔔",
+            subtitle = "Viral Call-to-action button overlay",
+            position = OverlayPosition.LOWER_THIRD,
+            animationType = OverlayAnimation.SLIDE_IN,
+            isEnabled = false
         )
     )
 }

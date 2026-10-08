@@ -113,50 +113,13 @@ fun VideoPlayerCard(
                         ) { onTogglePlayPause() },
                     contentAlignment = Alignment.Center
                 ) {
-                    // Simulated Video Frame with Dynamic Gradient & Movement & Visual Effects
+                    // Simulated Video Frame with Dynamic Gradient & Movement
                     SimulatedVideoFrame(
                         activeCut = activeCut,
                         colorGrade = project.colorGrade,
-                        activeEffect = project.activeEffect,
                         playbackPositionSec = playbackPositionSec,
                         zoomFactor = activeCut?.zoomFactor ?: 1.0f
                     )
-
-                    // Animated Floating Stickers Overlay
-                    project.stickers.forEach { sticker ->
-                        val isStickerActive = playbackPositionSec >= sticker.timestampSec &&
-                                playbackPositionSec <= (sticker.timestampSec + sticker.durationSec)
-                        if (isStickerActive) {
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                                    .offset(y = (-60).dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Surface(
-                                    shape = RoundedCornerShape(16.dp),
-                                    color = Color.Black.copy(alpha = 0.75f),
-                                    border = CardDefaults.outlinedCardBorder().copy(
-                                        brush = Brush.horizontalGradient(listOf(AmberVibrant, CyberPink))
-                                    )
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(text = sticker.emoji, fontSize = 26.sp)
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text(
-                                            text = sticker.label,
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Black,
-                                            color = Color.White
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
 
                     // Active Animated Captions Overlay (Hormozi / Cyber / Clean style if enabled)
                     if (project.enableCaptions && activeCaption != null) {
@@ -248,6 +211,140 @@ fun VideoPlayerCard(
                                 color = Color.White,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
+                        }
+                    }
+
+                    // Visual Filter Effect Shader Canvas
+                    if (project.activeFilterEffect != VideoFilterEffect.NONE) {
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            val w = size.width
+                            val h = size.height
+                            when (project.activeFilterEffect) {
+                                VideoFilterEffect.VHS_GLITCH -> {
+                                    var y = 0f
+                                    while (y < h) {
+                                        drawLine(
+                                            color = Color.Black.copy(alpha = 0.28f),
+                                            start = Offset(0f, y),
+                                            end = Offset(w, y),
+                                            strokeWidth = 2f
+                                        )
+                                        y += 6f
+                                    }
+                                    val glitchY = (playbackPositionSec * 320f) % h
+                                    drawRect(
+                                        color = NeonCyan.copy(alpha = 0.15f),
+                                        topLeft = Offset(0f, glitchY),
+                                        size = Size(w, 8f)
+                                    )
+                                }
+                                VideoFilterEffect.RGB_SPLIT -> {
+                                    drawRect(
+                                        brush = Brush.horizontalGradient(
+                                            listOf(
+                                                Color.Red.copy(alpha = 0.10f),
+                                                Color.Transparent,
+                                                NeonCyan.copy(alpha = 0.10f)
+                                            )
+                                        )
+                                    )
+                                }
+                                VideoFilterEffect.FILM_GRAIN -> {
+                                    drawRect(color = Color(0xFFD97706).copy(alpha = 0.08f))
+                                }
+                                VideoFilterEffect.NEON_CYBER -> {
+                                    drawRect(
+                                        brush = Brush.radialGradient(
+                                            listOf(Color.Transparent, CyberPink.copy(alpha = 0.20f))
+                                        )
+                                    )
+                                }
+                                VideoFilterEffect.FLASH_STROBE -> {
+                                    val cutTime = activeCut?.timelineStartSec ?: 0f
+                                    val timeSinceCut = playbackPositionSec - cutTime
+                                    if (timeSinceCut in 0f..0.12f) {
+                                        drawRect(color = Color.White.copy(alpha = 0.45f))
+                                    }
+                                }
+                                else -> {}
+                            }
+                        }
+                    }
+
+                    // Active Motion Overlays & Badges
+                    val enabledOverlays = project.activeOverlayItems.filter { it.isEnabled }
+                    enabledOverlays.forEach { item ->
+                        val alignment = when (item.position) {
+                            OverlayPosition.TOP_CENTER -> Alignment.TopCenter
+                            OverlayPosition.MIDDLE_SCREEN -> Alignment.Center
+                            OverlayPosition.LOWER_THIRD -> Alignment.BottomCenter
+                        }
+
+                        val verticalPad = when (item.position) {
+                            OverlayPosition.TOP_CENTER -> 36.dp
+                            OverlayPosition.MIDDLE_SCREEN -> 0.dp
+                            OverlayPosition.LOWER_THIRD -> 54.dp
+                        }
+
+                        Surface(
+                            modifier = Modifier
+                                .align(alignment)
+                                .padding(vertical = verticalPad),
+                            shape = RoundedCornerShape(12.dp),
+                            color = when (item.animationType) {
+                                OverlayAnimation.NEON_FLICKER -> Color(0xFFEF4444).copy(alpha = 0.9f)
+                                OverlayAnimation.GLITCH_BOUNCE -> ElectricViolet.copy(alpha = 0.9f)
+                                else -> AmberVibrant.copy(alpha = 0.95f)
+                            },
+                            shadowElevation = 8.dp
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = item.emoji,
+                                    fontSize = 14.sp
+                                )
+                                Text(
+                                    text = item.text,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = if (item.animationType == OverlayAnimation.PULSE) Color.Black else Color.White,
+                                    letterSpacing = 0.8.sp
+                                )
+                            }
+                        }
+                    }
+
+                    // Audio Waveform Spectrum Overlay
+                    if (project.showAudioWaveform) {
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth()
+                                .height(22.dp)
+                                .padding(horizontal = 16.dp, vertical = 2.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.Bottom
+                        ) {
+                            val barCount = 24
+                            for (i in 0 until barCount) {
+                                val t = playbackPositionSec * 8f + i
+                                val barHeightFactor = ((kotlin.math.sin(t) + kotlin.math.cos(t * 1.5f) + 2f) / 4f).coerceIn(0.15f, 1f)
+                                Box(
+                                    modifier = Modifier
+                                        .width(3.dp)
+                                        .fillMaxHeight(barHeightFactor)
+                                        .clip(RoundedCornerShape(1.5.dp))
+                                        .background(
+                                            Brush.verticalGradient(
+                                                listOf(NeonCyan, ElectricViolet)
+                                            )
+                                        )
+                                )
+                            }
                         }
                     }
                 }
@@ -408,7 +505,6 @@ fun VideoPlayerCard(
 private fun SimulatedVideoFrame(
     activeCut: CutTimelineItem?,
     colorGrade: ColorGradePreset,
-    activeEffect: VisualEffectPreset = VisualEffectPreset.NONE,
     playbackPositionSec: Float,
     zoomFactor: Float
 ) {
@@ -436,7 +532,7 @@ private fun SimulatedVideoFrame(
             .fillMaxSize()
             .background(Brush.radialGradient(baseGrad, radius = 900f * zoomFactor))
     ) {
-        // Subtle motion wave simulation & Visual Effects
+        // Subtle motion wave simulation
         Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width
             val height = size.height
@@ -470,72 +566,6 @@ private fun SimulatedVideoFrame(
                 cornerRadius = CornerRadius(12f, 12f),
                 style = Stroke(width = 2f)
             )
-
-            // Visual Effects Overlays
-            when (activeEffect) {
-                VisualEffectPreset.FILM_GRAIN -> {
-                    // Textured 35mm film grain micro-dots
-                    for (i in 0..24) {
-                        val gx = ((sin(timeOffset + i * 1.9f) * 0.5f + 0.5f) * width)
-                        val gy = ((Math.cos(timeOffset * 1.4 + i * 2.3) * 0.5 + 0.5) * height).toFloat()
-                        drawCircle(Color.White.copy(alpha = 0.12f), radius = 2.5f, center = Offset(gx, gy))
-                    }
-                }
-                VisualEffectPreset.CYBER_GLITCH -> {
-                    // RGB Glitch Slices
-                    val sliceY = (height * 0.40f) + (sin(timeOffset * 9f) * height * 0.25f)
-                    drawRect(NeonCyan.copy(alpha = 0.25f), Offset(0f, sliceY), Size(width, 14f))
-                    drawRect(CyberPink.copy(alpha = 0.22f), Offset(0f, sliceY + 16f), Size(width, 10f))
-                }
-                VisualEffectPreset.LIGHT_LEAK -> {
-                    // Optical Warm Lens Flare
-                    drawCircle(
-                        brush = Brush.radialGradient(
-                            listOf(AmberVibrant.copy(alpha = 0.4f), Color.Transparent),
-                            center = Offset(width * 0.85f, height * 0.15f),
-                            radius = width * 0.65f
-                        ),
-                        radius = width * 0.65f,
-                        center = Offset(width * 0.85f, height * 0.15f)
-                    )
-                }
-                VisualEffectPreset.FLASH_IMPACT -> {
-                    // High-energy strobe flashes on transitions
-                    val strobe = sin(timeOffset * 6f)
-                    if (strobe > 0.82f) {
-                        drawRect(Color.White.copy(alpha = 0.32f), size = size)
-                    }
-                }
-                VisualEffectPreset.VHS_RETRO -> {
-                    // Horizontal CRT Scanlines
-                    var scanY = 0f
-                    while (scanY < height) {
-                        drawLine(Color.Black.copy(alpha = 0.35f), Offset(0f, scanY), Offset(width, scanY), strokeWidth = 1.2f)
-                        scanY += 8f
-                    }
-                }
-                VisualEffectPreset.NONE -> {}
-            }
-        }
-
-        // Retro VHS Overlay tag if enabled
-        if (activeEffect == VisualEffectPreset.VHS_RETRO) {
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(10.dp),
-                shape = RoundedCornerShape(4.dp),
-                color = Color.Black.copy(alpha = 0.7f)
-            ) {
-                Text(
-                    text = "PLAY ▶ 00:0${(playbackPositionSec * 10).toInt() / 10} SP",
-                    fontSize = 10.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White.copy(alpha = 0.85f),
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                )
-            }
         }
 
         // Clip Title Badge in center

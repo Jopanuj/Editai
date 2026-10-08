@@ -129,9 +129,34 @@ class ExampleRobolectricTest {
   }
 
   @Test
-  fun `export pipeline initializes stage descriptions`() {
-    val viewModel = com.example.viewmodel.ShortyViewModel()
-    assertNotNull(viewModel.exportPipelineStage.value)
-    assertEquals(0f, viewModel.exportProgress.value, 0.01f)
+  fun `video filter effects can be applied via prompt revision`() {
+    val sampleClip = SampleMediaData.SampleClips.first()
+    val hormoziStyle = SampleMediaData.EditStyles.first()
+    val project = ShortyEditEngine.generateEditPlan(
+      rawClips = listOf(sampleClip),
+      style = hormoziStyle
+    )
+
+    val (vhsProject, _) = ShortyEditEngine.applyPromptRevision(project, "add retro vhs glitch")
+    assertEquals(com.example.model.VideoFilterEffect.VHS_GLITCH, vhsProject.activeFilterEffect)
+
+    val (filmProject, _) = ShortyEditEngine.applyPromptRevision(project, "give it 35mm film grain")
+    assertEquals(com.example.model.VideoFilterEffect.FILM_GRAIN, filmProject.activeFilterEffect)
+  }
+
+  @Test
+  fun `motion overlay badges and audio waveform can be toggled`() {
+    val sampleClip = SampleMediaData.SampleClips.first()
+    val hormoziStyle = SampleMediaData.EditStyles.first()
+    val project = ShortyEditEngine.generateEditPlan(
+      rawClips = listOf(sampleClip),
+      style = hormoziStyle
+    )
+
+    val (waveformProject, _) = ShortyEditEngine.applyPromptRevision(project, "show audio waveform visualizer")
+    assertTrue("Audio waveform should be enabled", waveformProject.showAudioWaveform)
+
+    val (stickerProject, _) = ShortyEditEngine.applyPromptRevision(project, "add sound on badge")
+    assertTrue("Should have active overlay items", stickerProject.activeOverlayItems.isNotEmpty())
   }
 }

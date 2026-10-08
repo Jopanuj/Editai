@@ -34,7 +34,6 @@ fun ExportDialog(
     project: TimelineProject,
     isExporting: Boolean,
     exportProgress: Float,
-    pipelineStage: String = "Processing pipeline...",
     exportSuccess: Boolean,
     onStartExport: (RenderQuality) -> Unit,
     onToggleCaptions: (Boolean) -> Unit = {},
@@ -328,6 +327,31 @@ fun ExportDialog(
                         }
                     }
 
+                    // Project Assets & FX Summary
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp),
+                        color = StudioSurfaceElevated
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Assets & Effects: ${project.activeFilterEffect.badge} • ${project.activeOverlayItems.count { it.isEnabled }} Overlays${if (project.showAudioWaveform) " • Waveform" else ""}",
+                                fontSize = 10.sp,
+                                color = NeonCyanLight,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "${project.soundEffects.size} SFX",
+                                fontSize = 9.sp,
+                                color = TextMuted
+                            )
+                        }
+                    }
+
                     // Value guarantee card
                     Card(
                         shape = RoundedCornerShape(12.dp),
@@ -349,307 +373,49 @@ fun ExportDialog(
                     }
 
                 } else if (isExporting) {
-                    // ==========================================
-                    // AI VIDEO PROCESSING PIPELINE PROGRESS VIEW
-                    // ==========================================
-                    val currentStepNum = when {
-                        exportProgress < 0.20f -> 1
-                        exportProgress < 0.40f -> 2
-                        exportProgress < 0.60f -> 3
-                        exportProgress < 0.80f -> 4
-                        else -> 5
-                    }
-
+                    // Rendering Progress View
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .testTag("export_pipeline_progress_indicator"),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                            .padding(vertical = 12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Pipeline Header & Live Progress Gauge
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = StudioSurface),
-                            border = CardDefaults.outlinedCardBorder().copy(
-                                brush = Brush.horizontalGradient(listOf(NeonCyan.copy(alpha = 0.5f), ElectricViolet.copy(alpha = 0.5f)))
-                            )
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(14.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            imageVector = Icons.Default.AutoAwesome,
-                                            contentDescription = "AI Pipeline",
-                                            tint = NeonCyan,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text(
-                                            text = "AI Processing Pipeline",
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = TextPrimary
-                                        )
-                                    }
+                        CircularProgressIndicator(
+                            progress = { exportProgress },
+                            modifier = Modifier.size(72.dp),
+                            color = NeonCyan,
+                            trackColor = StudioSurfaceBorder,
+                            strokeWidth = 6.dp
+                        )
 
-                                    Surface(
-                                        shape = RoundedCornerShape(6.dp),
-                                        color = ElectricViolet.copy(alpha = 0.25f)
-                                    ) {
-                                        Text(
-                                            text = "STAGE $currentStepNum / 5",
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Black,
-                                            color = NeonCyanLight,
-                                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
-                                        )
-                                    }
-                                }
+                        Text(
+                            text = "Rendering ${selectedQuality.label} MP4...",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
 
-                                Spacer(modifier = Modifier.height(14.dp))
+                        Text(
+                            text = if (captionsEnabled) {
+                                "${(exportProgress * 100).toInt()}% • Encoding ${(exportProgress * 920).toInt()} frames with ${selectedFontStyle.displayName} captions"
+                            } else {
+                                "${(exportProgress * 100).toInt()}% • Encoding ${(exportProgress * 920).toInt()} frames (Clean raw video, no captions)"
+                            },
+                            fontSize = 12.sp,
+                            color = NeonCyanLight,
+                            fontFamily = FontFamily.Monospace
+                        )
 
-                                // Central Gauge with percentage
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.size(80.dp)
-                                ) {
-                                    CircularProgressIndicator(
-                                        progress = { exportProgress },
-                                        modifier = Modifier.fillMaxSize(),
-                                        color = NeonCyan,
-                                        trackColor = StudioSurfaceBorder,
-                                        strokeWidth = 7.dp
-                                    )
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text(
-                                            text = "${(exportProgress * 100).toInt()}%",
-                                            fontSize = 18.sp,
-                                            fontWeight = FontWeight.Black,
-                                            color = TextPrimary
-                                        )
-                                        Text(
-                                            text = "GPU ACTIVE",
-                                            fontSize = 8.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = EmeraldSuccess
-                                        )
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                // Active stage description ticker
-                                Text(
-                                    text = pipelineStage,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = NeonCyanLight,
-                                    textAlign = TextAlign.Center
-                                )
-
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                LinearProgressIndicator(
-                                    progress = { exportProgress },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(6.dp)
-                                        .clip(RoundedCornerShape(3.dp)),
-                                    color = ElectricViolet,
-                                    trackColor = StudioSurfaceBorder
-                                )
-
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                // Real-time frame & hardware telemetry row
-                                val totalFrames = 1250
-                                val renderedFrames = (exportProgress * totalFrames).toInt()
-                                val etaSeconds = ((1f - exportProgress) * 4.8f).toInt() + 1
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = "Frame $renderedFrames / $totalFrames",
-                                        fontSize = 10.sp,
-                                        fontFamily = FontFamily.Monospace,
-                                        color = TextSecondary
-                                    )
-                                    Text(
-                                        text = "~${etaSeconds}s remaining",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = AmberVibrant
-                                    )
-                                    Text(
-                                        text = "60 FPS HW",
-                                        fontSize = 10.sp,
-                                        fontFamily = FontFamily.Monospace,
-                                        color = EmeraldSuccess
-                                    )
-                                }
-                            }
-                        }
-
-                        // Detailed 5-Stage Stepper List
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            val pipelineStagesData = listOf(
-                                Triple(
-                                    "1. Frame Ingestion & Trimming",
-                                    "Decodes raw source stream from trimmed boundaries",
-                                    0.0f..0.20f
-                                ),
-                                Triple(
-                                    "2. 9:16 Subject Auto-Reframing",
-                                    "Locks face coordinates to vertical safe-zone",
-                                    0.20f..0.40f
-                                ),
-                                Triple(
-                                    if (captionsEnabled) "3. Subtitle Burn-In (${selectedFontStyle.displayName})" else "3. Color Grade & Visual Polish",
-                                    if (captionsEnabled) "Bakes animated word highlights into video frames" else "Applies LUT color grading without subtitle burn-in",
-                                    0.40f..0.60f
-                                ),
-                                Triple(
-                                    "4. Audio Mastering & SFX Ducking",
-                                    "Levels voice audio, background beat & whooshes",
-                                    0.60f..0.80f
-                                ),
-                                Triple(
-                                    "5. Hardware MP4 Finalizing",
-                                    "Compresses ${selectedQuality.resolution} (Zero Watermark)",
-                                    0.80f..1.00f
-                                )
-                            )
-
-                            pipelineStagesData.forEachIndexed { index, (stageTitle, stageSub, range) ->
-                                val isCompleted = exportProgress >= range.endInclusive
-                                val isCurrent = exportProgress in range.start..range.endInclusive
-                                val isPending = exportProgress < range.start
-
-                                Surface(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(10.dp),
-                                    color = when {
-                                        isCurrent -> ElectricViolet.copy(alpha = 0.2f)
-                                        isCompleted -> StudioSurfaceElevated
-                                        else -> StudioSurface
-                                    },
-                                    border = if (isCurrent) CardDefaults.outlinedCardBorder().copy(
-                                        brush = Brush.horizontalGradient(listOf(NeonCyan, ElectricViolet))
-                                    ) else null
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 10.dp, vertical = 7.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.weight(1f),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            // Status Icon / Number indicator
-                                            Box(
-                                                modifier = Modifier.size(20.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                when {
-                                                    isCompleted -> {
-                                                        Icon(
-                                                            imageVector = Icons.Default.CheckCircle,
-                                                            contentDescription = "Done",
-                                                            tint = EmeraldSuccess,
-                                                            modifier = Modifier.size(18.dp)
-                                                        )
-                                                    }
-                                                    isCurrent -> {
-                                                        CircularProgressIndicator(
-                                                            modifier = Modifier.size(15.dp),
-                                                            color = NeonCyan,
-                                                            strokeWidth = 2.dp
-                                                        )
-                                                    }
-                                                    else -> {
-                                                        Surface(
-                                                            shape = CircleShape,
-                                                            color = StudioSurfaceBorder,
-                                                            modifier = Modifier.size(16.dp)
-                                                        ) {
-                                                            Box(contentAlignment = Alignment.Center) {
-                                                                Text(
-                                                                    text = "${index + 1}",
-                                                                    fontSize = 9.sp,
-                                                                    color = TextMuted
-                                                                )
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-
-                                            Spacer(modifier = Modifier.width(8.dp))
-
-                                            Column {
-                                                Text(
-                                                    text = stageTitle,
-                                                    fontSize = 11.sp,
-                                                    fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Medium,
-                                                    color = when {
-                                                        isCurrent -> NeonCyanLight
-                                                        isCompleted -> TextPrimary
-                                                        else -> TextMuted
-                                                    }
-                                                )
-                                                Text(
-                                                    text = stageSub,
-                                                    fontSize = 9.sp,
-                                                    color = if (isCurrent) AmberVibrant else TextSecondary
-                                                )
-                                            }
-                                        }
-
-                                        // Status Pill
-                                        Surface(
-                                            shape = RoundedCornerShape(4.dp),
-                                            color = when {
-                                                isCompleted -> EmeraldSuccess.copy(alpha = 0.15f)
-                                                isCurrent -> NeonCyan.copy(alpha = 0.2f)
-                                                else -> StudioSurfaceBorder.copy(alpha = 0.3f)
-                                            }
-                                        ) {
-                                            Text(
-                                                text = when {
-                                                    isCompleted -> "READY"
-                                                    isCurrent -> "ACTIVE"
-                                                    else -> "QUEUED"
-                                                },
-                                                fontSize = 8.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = when {
-                                                    isCompleted -> EmeraldSuccess
-                                                    isCurrent -> NeonCyanLight
-                                                    else -> TextMuted
-                                                },
-                                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        LinearProgressIndicator(
+                            progress = { exportProgress },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(6.dp)
+                                .clip(RoundedCornerShape(3.dp)),
+                            color = ElectricViolet,
+                            trackColor = StudioSurfaceBorder
+                        )
                     }
 
                 } else {
