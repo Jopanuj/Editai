@@ -123,14 +123,31 @@ fun VideoPlayerCard(
 
                     // Active Animated Captions Overlay (Hormozi / Cyber / Clean style if enabled)
                     if (project.enableCaptions && activeCaption != null) {
+                        val captionAlign = when (project.captionPosition) {
+                            CaptionPosition.TOP -> Alignment.TopCenter
+                            CaptionPosition.CENTER -> Alignment.Center
+                            CaptionPosition.BOTTOM -> Alignment.BottomCenter
+                        }
+
+                        val verticalPad = when (project.captionPosition) {
+                            CaptionPosition.TOP -> Modifier.padding(top = 44.dp, bottom = 0.dp)
+                            CaptionPosition.CENTER -> Modifier.padding(top = 0.dp, bottom = 0.dp)
+                            CaptionPosition.BOTTOM -> Modifier.padding(bottom = 28.dp, top = 0.dp)
+                        }
+
                         AnimatedCaptionOverlay(
                             caption = activeCaption,
                             preset = project.style.captionPreset,
                             fontStyle = project.captionFontStyle,
+                            fontSizeSp = project.captionFontSizeSp,
+                            highlightColor = Color(project.captionHighlightColorHex),
+                            textColor = Color(project.captionTextColorHex),
+                            backgroundStyle = project.captionBackgroundStyle,
                             phraseProgressSec = playbackPositionSec - activeCaption.startTimeSec,
                             modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(bottom = 28.dp, start = 8.dp, end = 8.dp)
+                                .align(captionAlign)
+                                .then(verticalPad)
+                                .padding(horizontal = 8.dp)
                         )
                     }
 
@@ -597,6 +614,10 @@ private fun AnimatedCaptionOverlay(
     caption: CaptionPhrase,
     preset: CaptionPreset,
     fontStyle: CaptionFontStyle,
+    fontSizeSp: Float,
+    highlightColor: Color,
+    textColor: Color,
+    backgroundStyle: CaptionBackgroundStyle,
     phraseProgressSec: Float,
     modifier: Modifier = Modifier
 ) {
@@ -624,6 +645,23 @@ private fun AnimatedCaptionOverlay(
         else -> 0.sp
     }
 
+    val surfaceColor = when (backgroundStyle) {
+        CaptionBackgroundStyle.SOLID_PILL -> Color.Black.copy(alpha = 0.82f)
+        CaptionBackgroundStyle.SUBTLE_BLUR -> Color(0xFF0F172A).copy(alpha = 0.60f)
+        CaptionBackgroundStyle.NEON_BORDER -> Color(0xFF020617).copy(alpha = 0.90f)
+        CaptionBackgroundStyle.NONE -> Color.Transparent
+    }
+
+    val surfaceBorder = when (backgroundStyle) {
+        CaptionBackgroundStyle.NEON_BORDER -> CardDefaults.outlinedCardBorder().copy(
+            brush = Brush.horizontalGradient(listOf(highlightColor, CyberPink))
+        )
+        CaptionBackgroundStyle.SUBTLE_BLUR -> CardDefaults.outlinedCardBorder().copy(
+            brush = Brush.horizontalGradient(listOf(StudioSurfaceBorder, StudioSurfaceBorder))
+        )
+        else -> null
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -632,15 +670,8 @@ private fun AnimatedCaptionOverlay(
     ) {
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = when (preset) {
-                CaptionPreset.HORMOZI -> Color.Black.copy(alpha = 0.75f)
-                CaptionPreset.NEON_PULSE -> Color(0xFF0F172A).copy(alpha = 0.85f)
-                CaptionPreset.MINIMAL_STUDIO -> Color.Black.copy(alpha = 0.6f)
-                CaptionPreset.BEAST_MODE -> Color(0xFF18181B).copy(alpha = 0.9f)
-            },
-            border = if (preset == CaptionPreset.NEON_PULSE) {
-                CardDefaults.outlinedCardBorder().copy(brush = Brush.linearGradient(listOf(NeonCyan, CyberPink)))
-            } else null
+            color = surfaceColor,
+            border = surfaceBorder
         ) {
             Row(
                 modifier = Modifier
@@ -653,13 +684,7 @@ private fun AnimatedCaptionOverlay(
                         val isWordActive = index == activeWordIndex
                         val isHighlighted = word.highlight || isWordActive
 
-                        val textColor = when {
-                            isWordActive && preset == CaptionPreset.HORMOZI -> AmberVibrant // Glowing yellow
-                            isWordActive && preset == CaptionPreset.NEON_PULSE -> NeonCyan // Cyan
-                            isWordActive && preset == CaptionPreset.BEAST_MODE -> EmeraldSuccess
-                            isHighlighted -> Color(preset.highlightColorHex)
-                            else -> Color.White
-                        }
+                        val wordColor = if (isHighlighted) highlightColor else textColor
 
                         val fontWeight = when (fontStyle) {
                             CaptionFontStyle.BOLD_IMPACT -> if (isHighlighted) FontWeight.Black else FontWeight.ExtraBold
@@ -677,24 +702,27 @@ private fun AnimatedCaptionOverlay(
 
                         val isItalic = (preset == CaptionPreset.NEON_PULSE) || (fontStyle == CaptionFontStyle.ELEGANT_SERIF)
 
+                        val activeFontSize = (fontSizeSp * 1.15f).sp
+                        val normalFontSize = fontSizeSp.sp
+
                         Text(
                             text = "${displayedWord}${if (word.emoji != null && isWordActive) " " + word.emoji else ""} ",
-                            fontSize = if (isWordActive) 16.sp else 14.sp,
+                            fontSize = if (isWordActive) activeFontSize else normalFontSize,
                             fontWeight = fontWeight,
                             fontFamily = fontFamily,
                             letterSpacing = letterSpacing,
-                            color = textColor,
+                            color = wordColor,
                             fontStyle = if (isItalic) FontStyle.Italic else FontStyle.Normal
                         )
                     }
                 } else {
                     Text(
                         text = caption.text,
-                        fontSize = 15.sp,
+                        fontSize = (fontSizeSp * 1.1f).sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = fontFamily,
                         letterSpacing = letterSpacing,
-                        color = Color(preset.highlightColorHex),
+                        color = highlightColor,
                         textAlign = TextAlign.Center
                     )
                 }

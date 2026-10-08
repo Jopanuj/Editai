@@ -305,6 +305,35 @@ class ShortyViewModel : ViewModel() {
         showToast("Caption Font: ${fontStyle.displayName}", true)
     }
 
+    fun updateCaptionFontSize(sizeSp: Float) {
+        _currentProject.value = _currentProject.value?.copy(
+            captionFontSizeSp = sizeSp.coerceIn(12f, 28f)
+        )
+        showToast("Caption Size: ${sizeSp.toInt()}sp", true)
+    }
+
+    fun updateCaptionColors(highlightHex: Long, textHex: Long = 0xFFFFFFFF) {
+        _currentProject.value = _currentProject.value?.copy(
+            captionHighlightColorHex = highlightHex,
+            captionTextColorHex = textHex
+        )
+        showToast("Caption Color updated", true)
+    }
+
+    fun updateCaptionPosition(position: CaptionPosition) {
+        _currentProject.value = _currentProject.value?.copy(
+            captionPosition = position
+        )
+        showToast("Caption Position: ${position.displayName}", true)
+    }
+
+    fun updateCaptionBackgroundStyle(style: CaptionBackgroundStyle) {
+        _currentProject.value = _currentProject.value?.copy(
+            captionBackgroundStyle = style
+        )
+        showToast("Caption Box: ${style.displayName}", true)
+    }
+
     fun updateColorGrade(grade: ColorGradePreset) {
         _currentProject.value = _currentProject.value?.copy(colorGrade = grade)
         showToast("Color grade: ${grade.displayName}", true)

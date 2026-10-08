@@ -159,4 +159,26 @@ class ExampleRobolectricTest {
     val (stickerProject, _) = ShortyEditEngine.applyPromptRevision(project, "add sound on badge")
     assertTrue("Should have active overlay items", stickerProject.activeOverlayItems.isNotEmpty())
   }
+
+  @Test
+  fun `caption font size, color, and position can be customized`() {
+    val sampleClip = SampleMediaData.SampleClips.first()
+    val hormoziStyle = SampleMediaData.EditStyles.first()
+    val project = ShortyEditEngine.generateEditPlan(
+      rawClips = listOf(sampleClip),
+      style = hormoziStyle
+    )
+
+    // Test font size enlargement
+    val (largerProject, _) = ShortyEditEngine.applyPromptRevision(project, "make bigger captions")
+    assertTrue("Caption font size should be larger", largerProject.captionFontSizeSp > project.captionFontSizeSp)
+
+    // Test color change to pink
+    val (pinkProject, _) = ShortyEditEngine.applyPromptRevision(project, "make captions pink")
+    assertEquals(0xFFEC4899, pinkProject.captionHighlightColorHex)
+
+    // Test position change to top
+    val (topProject, _) = ShortyEditEngine.applyPromptRevision(project, "move to top caption")
+    assertEquals(com.example.model.CaptionPosition.TOP, topProject.captionPosition)
+  }
 }

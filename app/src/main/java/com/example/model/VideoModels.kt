@@ -140,6 +140,11 @@ data class TimelineProject(
     val captions: List<CaptionPhrase>,
     val enableCaptions: Boolean = true,
     val captionFontStyle: CaptionFontStyle = CaptionFontStyle.BOLD_IMPACT,
+    val captionFontSizeSp: Float = 16f,
+    val captionHighlightColorHex: Long = 0xFFFACC15,
+    val captionTextColorHex: Long = 0xFFFFFFFF,
+    val captionPosition: CaptionPosition = CaptionPosition.BOTTOM,
+    val captionBackgroundStyle: CaptionBackgroundStyle = CaptionBackgroundStyle.SOLID_PILL,
     val selectedMusic: MusicTrack?,
     val musicVolume: Float = 0.35f,
     val soundEffects: List<SoundEffect> = emptyList(),
@@ -155,6 +160,26 @@ data class TimelineProject(
     val revisionHistory: List<String> = emptyList(),
     val isRendered: Boolean = false,
     val createdAtMs: Long = System.currentTimeMillis()
+)
+
+enum class CaptionPosition(val displayName: String, val badge: String) {
+    TOP("Top Header", "TOP"),
+    CENTER("Center Punch", "CENTER"),
+    BOTTOM("Lower Safe Zone", "BOTTOM")
+}
+
+enum class CaptionBackgroundStyle(val displayName: String, val badge: String) {
+    SOLID_PILL("Dark Pill Box", "PILL"),
+    SUBTLE_BLUR("Subtle Translucent", "GLASS"),
+    NEON_BORDER("Neon Border", "CYBER"),
+    NONE("Text Only", "RAW")
+}
+
+data class CaptionColorPalette(
+    val id: String,
+    val name: String,
+    val highlightColorHex: Long,
+    val textColorHex: Long = 0xFFFFFFFF
 )
 
 enum class VideoFilterEffect(

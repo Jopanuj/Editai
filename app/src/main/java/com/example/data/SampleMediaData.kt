@@ -271,4 +271,14 @@ object SampleMediaData {
             isEnabled = false
         )
     )
+
+    val CaptionColorPalettes = listOf(
+        CaptionColorPalette("c_hormozi", "Hormozi Gold", 0xFFFACC15, 0xFFFFFFFF),
+        CaptionColorPalette("c_cyan", "Cyber Neon Cyan", 0xFF06B6D4, 0xFFF8FAFC),
+        CaptionColorPalette("c_emerald", "Beast Emerald Green", 0xFF10B981, 0xFFFFFFFF),
+        CaptionColorPalette("c_hotpink", "Viral Hot Pink", 0xFFEC4899, 0xFFFFFFFF),
+        CaptionColorPalette("c_flame", "Flame Sunset Orange", 0xFFF97316, 0xFFFFFFFF),
+        CaptionColorPalette("c_purple", "Electric Ultraviolet", 0xFFA855F7, 0xFFFFFFFF),
+        CaptionColorPalette("c_white", "Pure Studio White", 0xFFFFFFFF, 0xFFE2E8F0)
+    )
 }

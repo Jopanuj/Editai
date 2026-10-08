@@ -293,17 +293,56 @@ object ShortyEditEngine {
         }
 
         if (lower.contains("yellow") || lower.contains("hormozi")) {
-            updated = updated.copy(style = updated.style.copy(captionPreset = CaptionPreset.HORMOZI))
+            updated = updated.copy(
+                style = updated.style.copy(captionPreset = CaptionPreset.HORMOZI),
+                captionHighlightColorHex = 0xFFFACC15
+            )
             logMessages.add("🟡 Switched to Viral Hormozi captions with glowing yellow active word highlights.")
         } else if (lower.contains("cyan") || lower.contains("neon") || lower.contains("cyber")) {
-            updated = updated.copy(style = updated.style.copy(captionPreset = CaptionPreset.NEON_PULSE))
+            updated = updated.copy(
+                style = updated.style.copy(captionPreset = CaptionPreset.NEON_PULSE),
+                captionHighlightColorHex = 0xFF06B6D4
+            )
             logMessages.add("🔷 Applied Cyber Neon glow caption style with italic highlights.")
         } else if (lower.contains("minimal") || lower.contains("clean") || lower.contains("white")) {
-            updated = updated.copy(style = updated.style.copy(captionPreset = CaptionPreset.MINIMAL_STUDIO))
+            updated = updated.copy(
+                style = updated.style.copy(captionPreset = CaptionPreset.MINIMAL_STUDIO),
+                captionHighlightColorHex = 0xFFFFFFFF
+            )
             logMessages.add("✨ Applied Clean Studio minimalist subtitles with subtle drop shadow.")
         } else if (lower.contains("green") || lower.contains("beast") || lower.contains("energy")) {
-            updated = updated.copy(style = updated.style.copy(captionPreset = CaptionPreset.BEAST_MODE))
+            updated = updated.copy(
+                style = updated.style.copy(captionPreset = CaptionPreset.BEAST_MODE),
+                captionHighlightColorHex = 0xFF10B981
+            )
             logMessages.add("🟢 Switched to Beast Mode high-energy punchy green captions.")
+        } else if (lower.contains("pink") || lower.contains("magenta")) {
+            updated = updated.copy(captionHighlightColorHex = 0xFFEC4899)
+            logMessages.add("💖 Changed caption highlight color to Viral Hot Pink.")
+        } else if (lower.contains("orange") || lower.contains("flame")) {
+            updated = updated.copy(captionHighlightColorHex = 0xFFF97316)
+            logMessages.add("🔥 Changed caption highlight color to Flame Orange.")
+        }
+
+        // Caption Font Size
+        if (lower.contains("bigger caption") || lower.contains("large caption") || lower.contains("bigger text") || lower.contains("huge text")) {
+            updated = updated.copy(captionFontSizeSp = kotlin.math.min(26f, updated.captionFontSizeSp + 4f))
+            logMessages.add("🔤 Enlarged caption text size to ${updated.captionFontSizeSp.toInt()}sp for high impact.")
+        } else if (lower.contains("smaller caption") || lower.contains("small text") || lower.contains("tiny caption")) {
+            updated = updated.copy(captionFontSizeSp = kotlin.math.max(12f, updated.captionFontSizeSp - 3f))
+            logMessages.add("🔤 Reduced caption text size to ${updated.captionFontSizeSp.toInt()}sp.")
+        }
+
+        // Caption Position
+        if (lower.contains("top caption") || lower.contains("header caption")) {
+            updated = updated.copy(captionPosition = CaptionPosition.TOP)
+            logMessages.add("📍 Moved caption safe-zone to top header.")
+        } else if (lower.contains("center caption") || lower.contains("middle caption")) {
+            updated = updated.copy(captionPosition = CaptionPosition.CENTER)
+            logMessages.add("📍 Moved caption safe-zone to center screen punch.")
+        } else if (lower.contains("bottom caption") || lower.contains("lower caption")) {
+            updated = updated.copy(captionPosition = CaptionPosition.BOTTOM)
+            logMessages.add("📍 Moved caption safe-zone to lower third.")
         }
 
         // 3. Color grading

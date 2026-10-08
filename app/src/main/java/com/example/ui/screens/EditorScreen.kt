@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.SampleMediaData
 import com.example.model.*
+import com.example.ui.components.CaptionConfigPanel
 import com.example.ui.components.EffectsStudioPanel
 import com.example.ui.components.ExportDialog
 import com.example.ui.components.TimelineView
@@ -417,186 +418,14 @@ fun EditorScreen(
                 }
 
                 EditorTab.STYLE -> {
-                    // Caption Settings, Font Styles, Presets & Color LUT Selection
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        // Master Captions Toggle Card
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(14.dp),
-                            colors = CardDefaults.cardColors(containerColor = StudioSurfaceElevated),
-                            border = CardDefaults.outlinedCardBorder().copy(
-                                brush = Brush.horizontalGradient(
-                                    if (currentProject.enableCaptions) listOf(AmberVibrant, ElectricViolet)
-                                    else listOf(StudioSurfaceBorder, StudioSurfaceBorder)
-                                )
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(14.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(
-                                    modifier = Modifier.weight(1f),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Subtitles,
-                                        contentDescription = "Captions",
-                                        tint = if (currentProject.enableCaptions) AmberVibrant else TextMuted,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Column {
-                                        Text(
-                                            text = "Automatic Video Captions",
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = TextPrimary
-                                        )
-                                        Text(
-                                            text = if (currentProject.enableCaptions) "Enabled • Animated subtitles baked into export" else "Disabled • Video exported clean without subtitles",
-                                            fontSize = 11.sp,
-                                            color = if (currentProject.enableCaptions) AmberVibrant else TextSecondary
-                                        )
-                                    }
-                                }
+                    // Caption Configuration Panel & Color LUT Selection
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        CaptionConfigPanel(
+                            project = currentProject,
+                            viewModel = viewModel
+                        )
 
-                                Switch(
-                                    checked = currentProject.enableCaptions,
-                                    onCheckedChange = { viewModel.toggleCaptionsEnabled(it) },
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = Color.White,
-                                        checkedTrackColor = AmberVibrant
-                                    ),
-                                    modifier = Modifier.testTag("style_tab_captions_switch")
-                                )
-                            }
-                        }
-
-                        if (currentProject.enableCaptions) {
-                            Text(
-                                text = "Caption Font Style",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = TextPrimary
-                            )
-
-                            CaptionFontStyle.entries.forEach { fontStyle ->
-                                val isSelected = currentProject.captionFontStyle == fontStyle
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { viewModel.updateCaptionFontStyle(fontStyle) },
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = if (isSelected) StudioSurfaceElevated else StudioSurface
-                                    ),
-                                    border = if (isSelected) CardDefaults.outlinedCardBorder().copy(
-                                        brush = Brush.horizontalGradient(listOf(AmberVibrant, ElectricViolet))
-                                    ) else null
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(12.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Text(
-                                                    text = fontStyle.displayName,
-                                                    fontSize = 13.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = if (isSelected) AmberVibrant else TextPrimary
-                                                )
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                Surface(
-                                                    shape = RoundedCornerShape(4.dp),
-                                                    color = Color.Black.copy(alpha = 0.5f)
-                                                ) {
-                                                    Text(
-                                                        text = fontStyle.sampleText,
-                                                        fontSize = 10.sp,
-                                                        color = AmberVibrant,
-                                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                                    )
-                                                }
-                                            }
-                                            Text(
-                                                text = fontStyle.description,
-                                                fontSize = 11.sp,
-                                                color = TextSecondary
-                                            )
-                                        }
-
-                                        RadioButton(
-                                            selected = isSelected,
-                                            onClick = { viewModel.updateCaptionFontStyle(fontStyle) },
-                                            colors = RadioButtonDefaults.colors(selectedColor = AmberVibrant)
-                                        )
-                                    }
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(6.dp))
-
-                            Text(
-                                text = "Animated Captions Color & Theme",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = TextPrimary
-                            )
-
-                            CaptionPreset.entries.forEach { preset ->
-                                val isSelected = currentProject.style.captionPreset == preset
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { viewModel.updateCaptionPreset(preset) },
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = if (isSelected) StudioSurfaceElevated else StudioSurface
-                                    ),
-                                    border = if (isSelected) CardDefaults.outlinedCardBorder().copy(
-                                        brush = Brush.horizontalGradient(listOf(NeonCyan, ElectricViolet))
-                                    ) else null
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(12.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Column {
-                                            Text(
-                                                text = preset.displayName,
-                                                fontSize = 13.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = if (isSelected) NeonCyanLight else TextPrimary
-                                            )
-                                            Text(
-                                                text = "${preset.fontStyle} • Word-by-word active highlight",
-                                                fontSize = 11.sp,
-                                                color = TextSecondary
-                                            )
-                                        }
-
-                                        RadioButton(
-                                            selected = isSelected,
-                                            onClick = { viewModel.updateCaptionPreset(preset) },
-                                            colors = RadioButtonDefaults.colors(selectedColor = NeonCyan)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
                             text = "Color Grading LUTs",
