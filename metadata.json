@@ -1,0 +1,6 @@
+{
+  "name": "Shorty AI",
+  "description": "AI Video Editor for raw footage. Automatically cuts, reframes, captions, and polishes clips into viral Reels and Shorts for free.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

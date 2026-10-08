@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Stylized Video Reel & Play / AI Scissors Shape in 66dp safe zone (30 to 78) -->
+    <!-- Film frame background card -->
+    <path
+        android:pathData="M34,32 h40 a6,6 0 0,1 6,6 v32 a6,6 0 0,1 -6,6 h-40 a6,6 0 0,1 -6,-6 v-32 a6,6 0 0,1 6,-6 z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="28"
+                android:startY="28"
+                android:endX="80"
+                android:endY="80"
+                android:type="linear">
+                <item android:color="#7C3AED" android:offset="0.0" />
+                <item android:color="#EC4899" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Film strip perforations on left and right -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.35"
+        android:pathData="M31,37 h3 v3 h-3 z M31,45 h3 v3 h-3 z M31,53 h3 v3 h-3 z M31,61 h3 v3 h-3 z M31,69 h3 v3 h-3 z M74,37 h3 v3 h-3 z M74,45 h3 v3 h-3 z M74,53 h3 v3 h-3 z M74,61 h3 v3 h-3 z M74,69 h3 v3 h-3 z" />
+
+    <!-- Center Play Triangle (Dynamic cut) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M49,43 L65,54 L49,65 Z" />
+
+    <!-- AI Sparkle / Magic Star at top right -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M73,27 C73,29.5 75.5,31 77,31 C75.5,31 73,32.5 73,35 C73,32.5 70.5,31 69,31 C70.5,31 73,29.5 73,27 Z" />
+    <path
+        android:fillColor="#FBBF24"
+        android:pathData="M35,69 C35,70.5 36.5,71.5 37.5,71.5 C36.5,71.5 35,72.5 35,74 C35,72.5 33.5,71.5 32.5,71.5 C33.5,71.5 35,70.5 35,69 Z" />
+</vector>
